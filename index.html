@@ -14,9 +14,10 @@
 
     <style>
         :root {
+            --pastel-blue: #e0f2fe; /* Azzurro Pastello */
+            --pastel-pink: #fce7f3; /* Rosa Pastello */
             --pink-bright: #ff80c0;
             --blue-bright: #66ccff;
-            --yellow-light: #fff8e1;
             --text: #333;
         }
 
@@ -30,6 +31,24 @@
             overflow: hidden; /* Blocca lo scorrimento all'inizio */
         }
 
+        /* --- Sfondo Bicolore --- */
+        .split-background {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            z-index: -10;
+            display: flex;
+        }
+        .split-background .blue {
+            width: 50%;
+            height: 100%;
+            background-color: var(--pastel-blue);
+        }
+        .split-background .pink {
+            width: 50%;
+            height: 100%;
+            background-color: var(--pastel-pink);
+        }
+
         /* --- Pagina di Copertina --- */
         #cover {
             position: fixed;
@@ -37,7 +56,7 @@
             left: 0;
             width: 100%;
             height: 100%;
-            background: linear-gradient(135deg, #ffe0f0 0%, #e0f0ff 50%, #fff8e0 100%);
+            background: linear-gradient(90deg, var(--pastel-blue) 0%, var(--pastel-blue) 50%, var(--pastel-pink) 50%, var(--pastel-pink) 100%);
             display: flex;
             flex-direction: column;
             justify-content: center;
@@ -75,13 +94,14 @@
             background: white;
             color: #555;
             border: 3px solid #ffccdd;
-            padding: 18px 45px;
-            font-size: 20px;
+            padding: 18px 30px;
+            font-size: 18px;
             font-weight: 600;
             cursor: pointer;
             border-radius: 50px;
             box-shadow: 0 10px 25px rgba(255,180,210,0.3);
             transition: 0.3s;
+            max-width: 80%; /* Evita che il testo vada fuori schermo su mobile */
         }
 
         #entry-button:hover {
@@ -95,8 +115,6 @@
             opacity: 0;
             visibility: hidden;
             transition: opacity 1s ease 0.5s;
-            background: linear-gradient(135deg, #ffedf6 0%, #edf6ff 50%, #fffbf0 100%);
-            background-attachment: fixed;
             min-height: 100%;
             overflow-y: auto; /* Riattiva lo scorrimento */
         }
@@ -200,12 +218,17 @@
 
 <body>
 
+    <div class="split-background">
+        <div class="blue"></div>
+        <div class="pink"></div>
+    </div>
+
     <div id="cover">
         <div class="cover-balloons">
             <span class="balloon-pop pink" id="balloon-pink">🌸</span>
             <span class="balloon-pop blue" id="balloon-blue">💧</span>
         </div>
-        <button id="entry-button" onclick="enterInvite()">Scopri il Fagottino ✨</button>
+        <button id="entry-button" onclick="enterInvite()">Mamma Elisabetta e Papà Emanuel ti invitano...</button>
     </div>
 
     <div id="main-content">
@@ -269,4 +292,163 @@
                 <div class="icon-box">🚗📍🗺️</div>
                 <h2 style="color: #66ccff;">Come arrivare</h2>
                 <p style="color: #666;">Clicca qui sotto per le indicazioni stradali</p>
-                <button onclick="window.open('
+                <button onclick="window.open('maps.google.com/4')">
+                    Apri Navigatore 🚗💨
+                </button>
+            </div>
+
+            <div class="card">
+                <div class="icon-box">📩💚</div>
+                <h2 style="color: #77dd77;">Ci sarai?</h2>
+                <p style="color: #666;">Conferma la tua presenza entro il 20 marzo</p>
+                <button style="background: linear-gradient(45deg, #77dd77, #aaffaa); box-shadow: 0 5px 20px rgba(100,220,100,0.3);" onclick="window.location.href='https://wa.me/393473402769?text=Ciao!+Confermo+con+piacere+la+mia+presenza+per+il+Baby+Shower+e+Gender+Reveal!+✨'">
+                    Conferma su WhatsApp 📲
+                </button>
+            </div>
+
+        </div>
+    </div>
+
+    <script>
+        // --- Gestione Coriandoli di Sfondo ---
+        const canvas = document.getElementById('confetti-bg');
+        const ctx = canvas.getContext('2d');
+        let width, height, confetti = [];
+        const colors = ['#ff80c0', '#66ccff', '#ffffff'];
+
+        function resize() {
+            width = canvas.width = window.innerWidth;
+            height = canvas.height = window.innerHeight;
+        }
+        window.addEventListener('resize', resize);
+        resize();
+
+        class Confetto {
+            constructor() {
+                this.x = Math.random() * width;
+                this.y = Math.random() * height - height;
+                this.r = Math.random() * 6 + 4;
+                this.dx = Math.random() * 2 - 1;
+                this.dy = Math.random() * 3 + 1;
+                this.color = colors[Math.floor(Math.random() * colors.length)];
+                this.tilt = Math.random() * 10 - 10;
+                this.tiltAngleIncremental = Math.random() * 0.07 + 0.05;
+                this.tiltAngle = 0;
+            }
+            draw() {
+                ctx.beginPath();
+                ctx.lineWidth = this.r / 2;
+                ctx.strokeStyle = this.color;
+                ctx.moveTo(this.x + this.tilt + this.r / 4, this.y);
+                ctx.lineTo(this.x + this.tilt, this.y + this.tilt + this.r / 4);
+                ctx.stroke();
+            }
+            update() {
+                this.tiltAngle += this.tiltAngleIncremental;
+                this.y += (Math.cos(this.tiltAngle) + 3 + this.r / 2) / 2;
+                this.x += Math.sin(this.tiltAngle);
+                this.tilt = Math.sin(this.tiltAngle - (this.r / 3)) * 15;
+                if (this.y > height) {
+                    this.y = -20;
+                    this.x = Math.random() * width;
+                }
+            }
+        }
+
+        function setupConfetti() {
+            confetti = [];
+            for (let i = 0; i < 50; i++) {
+                confetti.push(new Confetto());
+            }
+        }
+
+        function drawConfetti() {
+            ctx.clearRect(0, 0, width, height);
+            confetti.forEach(c => {
+                c.update();
+                c.draw();
+            });
+            requestAnimationFrame(drawConfetti);
+        }
+        setupConfetti();
+
+        // --- Gestione Copertina ---
+        function enterInvite() {
+            document.getElementById('balloon-pink').classList.add('popping');
+            document.getElementById('balloon-blue').classList.add('popping');
+            document.getElementById('entry-button').style.display = 'none';
+
+            confetti({
+                particleCount: 180,
+                spread: 120,
+                origin: { y: 0.6 },
+                colors: ['#ff80c0', '#66ccff', '#ffffff']
+            });
+
+            setTimeout(() => {
+                document.getElementById('cover').style.opacity = '0';
+                document.getElementById('cover').style.visibility = 'hidden';
+                
+                const mainContent = document.getElementById('main-content');
+                mainContent.style.opacity = '1';
+                mainContent.style.visibility = 'visible';
+                
+                drawConfetti(); // Avvia i coriandoli di sfondo
+                document.body.style.overflow = 'auto';
+            }, 600);
+        }
+
+        // --- Countdown ---
+        const targetDate = new Date("April 4, 2026 18:00:00").getTime();
+        setInterval(function() {
+            const now = new Date().getTime();
+            const diff = targetDate - now;
+
+            const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+            const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+            const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+
+            const countdownEl = document.getElementById("countdown");
+            if (countdownEl) {
+                if (diff < 0) {
+                    clearInterval(this);
+                    countdownEl.innerHTML = "🎉 È oggi il grande giorno!";
+                } else {
+                    countdownEl.innerHTML = `⏳ Mancano ${days}g : ${hours}h : ${minutes}m`;
+                }
+            }
+        }, 1000);
+
+        // --- Effetto Coriandoli Interno ---
+        function revealGender() {
+            const resultDiv = document.getElementById("result");
+            resultDiv.style.display = "block";
+            
+            const duration = 5 * 1000;
+            const end = Date.now() + duration;
+
+            (function frame() {
+                confetti({
+                    particleCount: 5,
+                    angle: 60,
+                    spread: 70,
+                    origin: { x: 0 },
+                    colors: ['#ff80c0', '#ffffff']
+                });
+                confetti({
+                    particleCount: 5,
+                    angle: 120,
+                    spread: 70,
+                    origin: { x: 1 },
+                    colors: ['#66ccff', '#ffffff']
+                });
+
+                if (Date.now() < end) {
+                    requestAnimationFrame(frame);
+                }
+            }());
+        }
+    </script>
+
+</body>
+</html>
